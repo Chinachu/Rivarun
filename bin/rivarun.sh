@@ -124,7 +124,7 @@ URL=""
 if [[ "$SERVICE" ]] && [[ "$SERVICE" != "epg" ]]; then
   URL="${URL}${SERVER}/services/${SERVICE}/stream"
 else
-  URL="${URL}${SERVER}/channels${CHANNEL}/stream"
+  URL="${URL}${SERVER}/channels/${CHANNEL}/stream"
 fi
 
 URL="${URL}?decode=${DECODE}"
