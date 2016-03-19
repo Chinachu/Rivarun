@@ -15,7 +15,7 @@
 #   limitations under the License.
 
 usage() {
-  cat <<EOF
+  cat 1>&2 <<EOF
 
 Usage:
 rivarun [--b25] [--mirakurun host:port] [--priority priority] [--sid SID] [--ch type/channel] rectime destfile
@@ -88,15 +88,15 @@ for OPT in "$@"
         ;;
       "--help" )
         usage
-        exit 1
+        exit 0
         ;;
       "--version" )
         npm ls -g rivarun
-        exit 1
+        exit 0
         ;;
       "--list" )
         curl ${SERVER}/channels
-        exit 1
+        exit 0
         ;;
     esac
   done
@@ -129,21 +129,14 @@ fi
 
 URL="${URL}?decode=${DECODE}"
 
-curl $OPTIONS -A "Rivarun/1.0" -H "X-Mirakurun-Priority: ${PRIORITY}" $URL 
+term() {
+  echo "Terminated" 1>&2
+  kill -TERM "$CHILD"
+}
 
+trap term SIGTERM
 
+curl $OPTIONS -A "Rivarun/1.0" -H "X-Mirakurun-Priority: ${PRIORITY}" $URL &
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+CHILD=$!
+wait "$CHILD"
