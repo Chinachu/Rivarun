@@ -3,6 +3,7 @@ A Simple [Mirakurun](https://github.com/kanreisa/Mirakurun) Client Implementatio
 
 tested on **[Chinachu](https://chinachu.moe/)** (beta). (Note: This is **NOT** for Chinachu Air.)
 
+[![npm version][npm-img]][npm-url]
 
 ## Requirements
 
@@ -57,3 +58,6 @@ rivarun [--b25] [--mirakurun host] [--priority priority] [--sid SID] [--ch type/
 ## License
 
 [Apache License, Version 2.0](LICENSE)
+
+[npm-img]: https://img.shields.io/npm/v/rivarun.svg
+[npm-url]: https://npmjs.org/package/rivarun
