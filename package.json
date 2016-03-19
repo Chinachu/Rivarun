@@ -1,0 +1,37 @@
+{
+  "name": "rivarun",
+  "preferGlobal": true,
+  "description": "A Simple Mirakurun Client Implementation like recpt1.",
+  "version": "1.0.0",
+  "homepage": "https://github.com/kanreisa/Mirakurun",
+  "keywords": [
+    "mirakurun",
+    "chinachu",
+    "dvr",
+    "tv",
+    "linux",
+    "recpt1"
+  ],
+  "author": {
+    "name": "Yuki KAN",
+    "url": "https://github.com/kanreisa"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kanreisa/Rivarun.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kanreisa/Rivarun/issues"
+  },
+  "license": "Apache-2.0",
+  "bin": {
+    "rivarun": "bin/rivarun.sh"
+  },
+  "scripts": {
+    "test": "echo \"I haven't test.\""
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
