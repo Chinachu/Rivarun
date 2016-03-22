@@ -134,6 +134,7 @@ term() {
   kill -TERM "$CHILD"
 }
 
+trap term SIGINT
 trap term SIGTERM
 
 curl $OPTIONS -A "Rivarun/1.0" -H "X-Mirakurun-Priority: ${PRIORITY}" $URL &
