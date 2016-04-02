@@ -122,7 +122,11 @@ fi
 URL=""
 
 if [[ "$SERVICE" ]] && [[ "$SERVICE" != "epg" ]]; then
-  URL="${URL}${SERVER}/services/${SERVICE}/stream"
+  if [[ "$CHANNEL" ]]; then
+    URL="${URL}${SERVER}/channels/${CHANNEL}/services/${SERVICE}/stream"
+  else
+    URL="${URL}${SERVER}/services/${SERVICE}/stream"
+  fi
 else
   URL="${URL}${SERVER}/channels/${CHANNEL}/stream"
 fi
