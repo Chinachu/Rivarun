@@ -151,7 +151,7 @@ if (options.mirakurun) {
 
 if (options.sid && options.sid !== "epg") {
     if (options.ch) {
-        reqOptions.path = `/api/services/${options.ch}/services/${options.sid}/stream?decode=${options.b25 ? 1 : 0}`;
+        reqOptions.path = `/api/channels/${options.ch}/services/${options.sid}/stream?decode=${options.b25 ? 1 : 0}`;
     } else {
         reqOptions.path = `/api/services/${options.sid}/stream?decode=${options.b25 ? 1 : 0}`;
     }
