@@ -2,20 +2,22 @@
   "name": "rivarun",
   "preferGlobal": true,
   "description": "A Simple Mirakurun Client Implementation like recpt1.",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "homepage": "https://github.com/kanreisa/Mirakurun",
   "keywords": [
     "mirakurun",
     "chinachu",
     "dvr",
     "tv",
-    "linux",
     "recpt1"
   ],
   "author": {
     "name": "Yuki KAN",
     "url": "https://github.com/kanreisa"
   },
+  "contributors": [
+    "rndomhack"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/kanreisa/Rivarun.git"
