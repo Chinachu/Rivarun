@@ -25,7 +25,7 @@
   },
   "license": "Apache-2.0",
   "bin": {
-    "rivarun": "bin/rivarun.sh"
+    "rivarun": "bin/rivarun"
   },
   "scripts": {
     "test": "echo \"I haven't test.\""
