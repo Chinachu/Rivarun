@@ -5,11 +5,6 @@ tested on **[Chinachu](https://chinachu.moe/)** (beta). (Note: This is **NOT** f
 
 [![npm version][npm-img]][npm-url]
 
-## Requirements
-
-* bash
-* [curl](https://curl.haxx.se/) `>= 7.40`
-
 ## Install
 
 ```
