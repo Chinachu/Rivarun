@@ -2,7 +2,7 @@
   "name": "rivarun",
   "preferGlobal": true,
   "description": "A Simple Mirakurun Client Implementation like recpt1.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "homepage": "https://github.com/kanreisa/Mirakurun",
   "keywords": [
     "mirakurun",
