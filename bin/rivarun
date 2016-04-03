@@ -60,54 +60,52 @@ if (process.argv[2] === "--version") {
     return;
 }
 
-if (process.argv.length < 4) {
-    usage();
-
-    return;
-}
-
 let options, reqOptions, writeStream;
 
 options = {
+    list: false,
     b25: false,
     mirakurun: "",
     priority: "0",
     sid: "",
-    ch: "",
-    rectime: process.argv[process.argv.length - 2],
-    destfile: process.argv[process.argv.length - 1]
+    ch: ""
 };
 
-for (let i = 2; i < process.argv.length - 2; i++) {
+for (let i = 2; i < process.argv.length; i++) {
     switch (process.argv[i]) {
+        case "--list":
+            options.list = true;
+
+            break;
+
         case "--b25":
             options.b25 = true;
 
             break;
 
         case "--mirakurun":
-            if (i === process.argv - 3) break;
+            if (i === process.argv.length - 1) break;
 
             options.mirakurun = process.argv[i + 1];
 
             break;
 
         case "--priority":
-            if (i === process.argv - 3) break;
+            if (i === process.argv.length - 1) break;
 
             options.priority = process.argv[i + 1];
 
             break;
 
         case "--sid":
-            if (i === process.argv - 3) break;
+            if (i === process.argv.length - 1) break;
 
             options.sid = process.argv[i + 1];
 
             break;
 
         case "--ch":
-            if (i === process.argv - 3) break;
+            if (i === process.argv.length - 1) break;
 
             options.ch = process.argv[i + 1];
 
@@ -123,17 +121,41 @@ reqOptions = {
     }
 };
 
-if (options.destfile !== "-") {
-    try {
-        writeStream = fs.createWriteStream(options.destfile);
-    } catch (err) {
-        console.error(`Error: ${err.message}`);
-        process.exitCode = 1;
+if (options.list) {
+    reqOptions.path = "/api/channels";
+    writeStream = process.stdout;
+} else {
+    if (process.argv.length < 4) {
+        console.error("Error: Missing rectime or destfile");
 
         return;
     }
-} else {
-    writeStream = process.stdout;
+
+    options.rectime = process.argv[process.argv.length - 2];
+    options.destfile = process.argv[process.argv.length - 1];
+
+    if (options.destfile !== "-") {
+        try {
+            writeStream = fs.createWriteStream(options.destfile);
+        } catch (err) {
+            console.error(`Error: ${err.message}`);
+            process.exitCode = 1;
+
+            return;
+        }
+    } else {
+        writeStream = process.stdout;
+    }
+
+    if (options.sid && options.sid !== "epg") {
+        if (options.ch) {
+            reqOptions.path = `/api/channels/${options.ch}/services/${options.sid}/stream?decode=${options.b25 ? 1 : 0}`;
+        } else {
+            reqOptions.path = `/api/services/${options.sid}/stream?decode=${options.b25 ? 1 : 0}`;
+        }
+    } else {
+        reqOptions.path = `/api/channels/${options.ch}/stream?decode=${options.b25 ? 1 : 0}`;
+    }
 }
 
 if (options.mirakurun) {
@@ -147,16 +169,6 @@ if (options.mirakurun) {
     } else {
         reqOptions.socketPath = "/var/run/mirakurun.sock";
     }
-}
-
-if (options.sid && options.sid !== "epg") {
-    if (options.ch) {
-        reqOptions.path = `/api/channels/${options.ch}/services/${options.sid}/stream?decode=${options.b25 ? 1 : 0}`;
-    } else {
-        reqOptions.path = `/api/services/${options.sid}/stream?decode=${options.b25 ? 1 : 0}`;
-    }
-} else {
-    reqOptions.path = `/api/channels/${options.ch}/stream?decode=${options.b25 ? 1 : 0}`;
 }
 
 let req = http.request(reqOptions, res => {
