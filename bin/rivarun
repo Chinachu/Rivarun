@@ -43,7 +43,7 @@ Options:
 }
 
 function version() {
-    let pkg = require("./package.json");
+    let pkg = require("../package.json");
 
     console.error(`${pkg.name} v${pkg.version}`);
 }
