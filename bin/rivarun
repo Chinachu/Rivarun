@@ -1,0 +1,178 @@
+#!/usr/bin/env node
+
+/*
+   Copyright 2016 Yuki KAN
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+"use strict";
+
+const fs = require("fs");
+const http = require("http");
+
+function usage() {
+    console.error(`
+Usage:
+rivarun [--b25] [--mirakurun host:port] [--priority priority] [--sid SID] [--ch type/channel] rectime destfile
+Remarks:
+* if rectime  is \`-\`, records indefinitely.
+* if destfile is \`-\`, stdout is used for output.
+* if \`--sid\` option specified, will ignore \`--ch\` option.
+Options:
+--b25:                 Send decode request
+--mirakurun host:port: Specify Mirakurun hostname and portnumber
+--priority priority:   Specify client priority (default=0)
+--sid SID:             Specify SID number
+--ch type/channel      Specify channeltype and channel
+                         type = GR | BS | CS | SKY
+--help:                Show this help
+--version:             Show version
+--list:                Show channel list
+    `);
+}
+
+function version() {
+    let pkg = require("./package.json");
+
+    console.error(`${pkg.name} v${pkg.version}`);
+}
+
+if (process.argv[2] === "--help") {
+    usage();
+
+    return;
+}
+
+if (process.argv[2] === "--version") {
+    version();
+
+    return;
+}
+
+if (process.argv.length < 4) {
+    usage();
+
+    return;
+}
+
+let options, reqOptions, writeStream;
+
+options = {
+    b25: false,
+    mirakurun: "",
+    priority: "0",
+    sid: "",
+    ch: "",
+    rectime: process.argv[process.argv.length - 2],
+    destfile: process.argv[process.argv.length - 1]
+};
+
+for (let i = 2; i < process.argv.length - 2; i++) {
+    switch (process.argv[i]) {
+        case "--b25":
+            options.b25 = true;
+
+            break;
+
+        case "--mirakurun":
+            if (i === process.argv - 3) break;
+
+            options.mirakurun = process.argv[i + 1];
+
+            break;
+
+        case "--priority":
+            if (i === process.argv - 3) break;
+
+            options.priority = process.argv[i + 1];
+
+            break;
+
+        case "--sid":
+            if (i === process.argv - 3) break;
+
+            options.sid = process.argv[i + 1];
+
+            break;
+
+        case "--ch":
+            if (i === process.argv - 3) break;
+
+            options.ch = process.argv[i + 1];
+
+            break;
+    }
+}
+
+reqOptions = {
+    method: "GET",
+    headers: {
+        "User-Agent": "Rivarun/1.0",
+        "X-Mirakurun-Priority": options.priority
+    }
+};
+
+if (options.destfile !== "-") {
+    try {
+        writeStream = fs.createWriteStream(options.destfile);
+    } catch (err) {
+        console.error(`Error: ${err.message}`);
+        process.exitCode = 1;
+
+        return;
+    }
+} else {
+    writeStream = process.stdout;
+}
+
+if (options.mirakurun) {
+    let mirakurun = options.mirakurun.split(":");
+
+    reqOptions.host = mirakurun[0];
+    reqOptions.port = mirakurun[1] || 80;
+} else {
+    if (process.platform === "win32") {
+        reqOptions.socketPath = "\\\\.\\pipe\\mirakurun";
+    } else {
+        reqOptions.socketPath = "/var/run/mirakurun.sock";
+    }
+}
+
+if (options.sid && options.sid !== "epg") {
+    if (options.ch) {
+        reqOptions.path = `/api/services/${options.ch}/services/${options.sid}/stream?decode=${options.b25 ? 1 : 0}`;
+    } else {
+        reqOptions.path = `/api/services/${options.sid}/stream?decode=${options.b25 ? 1 : 0}`;
+    }
+} else {
+    reqOptions.path = `/api/channels/${options.ch}/stream?decode=${options.b25 ? 1 : 0}`;
+}
+
+let req = http.request(reqOptions, res => {
+    console.error(`status: ${res.statusCode}`);
+    console.log(`headers: ${JSON.stringify(res.headers)}`);
+
+    if (options.rectime !== "-") {
+        setTimeout(() => res.unpipe(writeStream), parseInt(options.rectime, 10) * 1000);
+    }
+
+    res.pipe(writeStream);
+});
+
+req.on("error", err => {
+    console.error(`Error: ${err.message}`);
+    process.exitCode = 1;
+});
+
+req.end();
