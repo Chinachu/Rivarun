@@ -168,7 +168,7 @@ if (options.mirakurun) {
 
 let req = http.request(reqOptions, res => {
     console.error(`status: ${res.statusCode}`);
-    console.log(`headers: ${JSON.stringify(res.headers)}`);
+    console.error(`headers: ${JSON.stringify(res.headers)}`);
 
     if (options.rectime !== "-") {
         setTimeout(() => res.unpipe(writeStream), parseInt(options.rectime, 10) * 1000);
