@@ -29,7 +29,6 @@ rivarun [--b25] [--mirakurun host] [--priority priority] [--sid SID] [--ch type/
 
 * if rectime  is `-`, records indefinitely.
 * if destfile is `-`, stdout is used for output.
-* if `--sid` option specified, will ignore `--ch` option.
 
 #### Options
 
