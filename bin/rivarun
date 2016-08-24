@@ -16,12 +16,15 @@
    limitations under the License.
 */
 
+/// <reference path="../typings/index.d.ts" />
+
 "use strict";
 
-const fs = require("fs");
-const http = require("http");
+import * as fs from "fs";
+import * as http from "http";
 
 function usage() {
+
     console.error(`
 Usage:
 rivarun [--b25] [--mirakurun host:port] [--priority priority] [--sid SID] [--ch type/channel] rectime destfile
@@ -43,7 +46,8 @@ Options:
 }
 
 function version() {
-    let pkg = require("../package.json");
+
+    const pkg = require("../package.json");
 
     console.error(`${pkg.name} v${pkg.version}`);
 }
@@ -51,16 +55,16 @@ function version() {
 if (process.argv[2] === "--help") {
     usage();
 
-    return;
+    process.exit(0);
 }
 
 if (process.argv[2] === "--version") {
     version();
 
-    return;
+    process.exit(0);
 }
 
-let options, argv, reqOptions, writeStream;
+let options, argv, writeStream;
 
 options = {
     list: process.argv[2] === "--list",
@@ -106,12 +110,16 @@ for (let i = 0; i < argv.length; i++) {
     }
 }
 
-reqOptions = {
+const reqOptions = {
     method: "GET",
     headers: {
-        "User-Agent": "Rivarun/1.0",
+        "User-Agent": "Rivarun/1.2",
         "X-Mirakurun-Priority": options.priority
-    }
+    },
+    path: "",
+    host: undefined,
+    port: undefined,
+    socketPath: undefined
 };
 
 if (options.list) {
@@ -123,7 +131,7 @@ if (options.list) {
     if (argv.length < 2) {
         usage();
 
-        return;
+        process.exit(0);
     }
 
     options.rectime = process.argv[process.argv.length - 2];
@@ -145,9 +153,8 @@ if (options.destfile !== "-") {
         writeStream = fs.createWriteStream(options.destfile);
     } catch (err) {
         console.error(`Error: ${err.message}`);
-        process.exitCode = 1;
 
-        return;
+        process.exit(1);
     }
 } else {
     writeStream = process.stdout;
@@ -166,20 +173,50 @@ if (options.mirakurun) {
     }
 }
 
-let req = http.request(reqOptions, res => {
-    console.error(`status: ${res.statusCode}`);
-    console.error(`headers: ${JSON.stringify(res.headers)}`);
+let maxRedirectCount = 3;
 
-    if (options.rectime !== "-") {
-        setTimeout(() => res.unpipe(writeStream), parseInt(options.rectime, 10) * 1000);
-    }
+function request() {
 
-    res.pipe(writeStream);
-});
+    const req = http.request(reqOptions, res => {
 
-req.on("error", err => {
-    console.error(`Error: ${err.message}`);
-    process.exitCode = 1;
-});
+        console.error(`status: ${res.statusCode}`);
+        console.error(`headers: ${JSON.stringify(res.headers)}`);
 
-req.end();
+        if (res.statusCode > 300 && res.statusCode < 400 && res.headers["location"]) {
+            if (maxRedirectCount === 0) {
+                console.error("Error: Too many redirects!");
+
+                process.exit(1);
+            }
+            if (/^\//.test(res.headers["location"]) === false) {
+                console.error(`Error: Redirecting location "${res.headers["location"]}" isn't supported.`);
+
+                process.exit(1);
+            }
+
+            --maxRedirectCount;
+
+            reqOptions.path = res.headers["location"];
+
+            setTimeout(request, 100);
+            return;
+        }
+
+        if (options.rectime !== "-") {
+            setTimeout(() => res.unpipe(writeStream), parseInt(options.rectime, 10) * 1000);
+        }
+
+        res.pipe(writeStream);
+    });
+
+    req.on("error", err => {
+
+        console.error(`Error: ${err.message}`);
+
+        process.exit(1);
+    });
+
+    req.end();
+}
+
+request();
